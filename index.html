@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#071426">
+<title>MySQL Connection Test | server.shodns.in</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at top,#17365e,#071426 65%);font-family:Arial,sans-serif;color:#fff}
+.container{width:100%;max-width:440px;background:#101e32;padding:28px;border:1px solid #263d5b;border-radius:20px;box-shadow:0 15px 50px #0006}
+.brand{text-align:center;margin-bottom:25px}.logo{width:60px;height:60px;margin:auto;display:flex;align-items:center;justify-content:center;border-radius:17px;background:linear-gradient(135deg,#1769e0,#00bcd4);font-size:27px;font-weight:bold}
+h1{font-size:22px;margin:15px 0 6px}.subtitle{color:#91a6c2;font-size:13px}
+.field{margin-top:17px}label{display:block;margin-bottom:8px;font-size:13px;color:#c6d5e8}
+input{width:100%;padding:14px;background:#091629;border:1px solid #2b405e;border-radius:10px;color:#fff;font-size:15px;outline:none}
+input:focus{border-color:#2387ff;box-shadow:0 0 0 3px #2387ff22}
+.password-box{display:flex;gap:8px}.password-box input{flex:1;min-width:0}.password-box button{width:65px;padding:0;margin:0;background:#263d5b}
+button{width:100%;padding:15px;margin-top:22px;background:linear-gradient(135deg,#1769e0,#008fdb);color:white;border:0;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+#result{display:none;margin-top:18px;padding:15px;border-radius:10px;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.success{display:block!important;background:#103d30;border:1px solid #1e9c70;color:#78edba}
+.error{display:block!important;background:#431f2b;border:1px solid #a94458;color:#ff9ba9}
+.loading{display:block!important;background:#172d49;border:1px solid #3477bb;color:#8fc5ff}
+.note{margin-top:15px;color:#9fb1c8;font-size:12px;line-height:1.5}
+.footer{text-align:center;margin-top:24px;color:#8297b2;font-size:12px}.footer a{color:#55b8ff;text-decoration:none}
+</style>
+</head>
+<body>
+<main class="container">
+ <header class="brand">
+  <div class="logo">S</div>
+  <h1>MySQL Connection Test</h1>
+  <div class="subtitle">Secure Database Connection Checker</div>
+ </header>
+ <form id="dbForm">
+  <div class="field"><label for="host">Database Host</label><input id="host" name="host" value="localhost" placeholder="e.g. mysql.example.com" required maxlength="253"></div>
+  <div class="field"><label for="dbname">Database Name</label><input id="dbname" name="dbname" placeholder="Enter database name" required maxlength="64"></div>
+  <div class="field"><label for="username">Database Username</label><input id="username" name="username" placeholder="Enter database username" required maxlength="128"></div>
+  <div class="field"><label for="password">Database Password</label><div class="password-box"><input id="password" name="password" type="password" placeholder="Enter database password" maxlength="256"><button type="button" id="toggle">Show</button></div></div>
+  <button type="submit" id="checkBtn">CHECK CONNECTION</button>
+ </form>
+ <div id="result" role="status" aria-live="polite"></div>
+ <p class="note">Your credentials are sent over HTTPS to this Vercel app for the connection test. They are not saved by this app. Only test databases you own or are authorized to access.</p>
+ <footer class="footer">Powered by <a href="https://server.shodns.in" target="_blank" rel="noopener">server.shodns.in</a><br><br>Secure Database Testing System</footer>
+</main>
+<script>
+const form=document.getElementById('dbForm'),result=document.getElementById('result'),btn=document.getElementById('checkBtn');
+document.getElementById('toggle').addEventListener('click',()=>{const p=document.getElementById('password'),b=document.getElementById('toggle');p.type=p.type==='password'?'text':'password';b.textContent=p.type==='password'?'Show':'Hide';});
+form.addEventListener('submit',async e=>{
+ e.preventDefault();
+ const payload={host:document.getElementById('host').value.trim(),dbname:document.getElementById('dbname').value.trim(),username:document.getElementById('username').value.trim(),password:document.getElementById('password').value};
+ if(!payload.host||!payload.dbname||!payload.username){show('Please fill in all required fields.','error');return;}
+ btn.disabled=true;btn.textContent='CHECKING...';show('Connecting to MySQL database...','loading');
+ try{
+  const response=await fetch('/api/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const data=await response.json().catch(()=>({success:false,message:'Invalid server response.'}));
+  show(data.message||'Unknown server response.',data.success?'success':'error');
+ }catch(err){show('Network/server error. Please try again.','error');}
+ finally{btn.disabled=false;btn.textContent='CHECK CONNECTION';}
+});
+function show(message,type){result.className=type;result.textContent=(type==='success'?'✓ ':type==='error'?'✕ ':'● ')+message;}
+</script>
+</body>
+</html>
